@@ -11,8 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -23,7 +24,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.thejetpackcomposelearnphilipplackner.ui.theme.TheJetpackComposeLearnPhilippLacknerTheme
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +33,10 @@ class MainActivity : ComponentActivity() {
                     mutableStateOf("")
                 }
                 var names by remember {
-                    mutableStateOf(listOf<String>("Quang"))
+                    mutableStateOf(listOf<String>("Quang","Azura"))
+                }
+                var selectedIndexes by remember {
+                    mutableStateOf(setOf<Int>())
                 }
                Column(
                    modifier = Modifier
@@ -61,15 +64,46 @@ class MainActivity : ComponentActivity() {
                        ) {
                          Text(text = "Add")
                        }
+                       Spacer(modifier = Modifier.width(16.dp))
+                       Button(
+                           onClick = {
+                               if(selectedIndexes.isNotEmpty()){
+                                   names = names.filterIndexed{ index, _ ->
+                                       index !in selectedIndexes
+                                   }
+                                   selectedIndexes = emptySet()
+                               }
+                           }
+                       ) {
+                           Text(text = "Remove")
+                       }
                    }
                    LazyColumn(){
-                       items(names){
-                           Text(
-                               text = it,
-                               modifier = Modifier
-                                   .fillMaxWidth()
-                                   .padding(16.dp)
+                       itemsIndexed(names){index , item ->
+                           Row(
+                               modifier = Modifier.fillMaxWidth()
+                           ){
+                               Text(
+                                   text = item,
+                                   modifier = Modifier
+                                       .fillMaxWidth()
+                                       .padding(16.dp)
+                                       .weight(1f)
                                )
+                               Checkbox(
+                                   checked = index in selectedIndexes,
+                                   onCheckedChange = {
+                                       selectedIndexes = if(it){
+                                           selectedIndexes + index
+                                       }
+                                       else
+                                       {
+                                           selectedIndexes - index
+                                       }
+                                   }
+                               )
+
+                           }
                            Divider()
                        }
                    }
