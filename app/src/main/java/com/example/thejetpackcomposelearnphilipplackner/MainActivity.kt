@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
@@ -32,27 +33,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.thejetpackcomposelearnphilipplackner.ui.theme.TheJetpackComposeLearnPhilippLacknerTheme
 import androidx.compose.material3.AlertDialog
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             TheJetpackComposeLearnPhilippLacknerTheme {
-                var text by remember {
-                    mutableStateOf("")
-                }
-                var names by remember {
-                    mutableStateOf(listOf("Quang","Azura"))
-                }
-                var selectedIndexes by remember {
-                    mutableStateOf(setOf<Int>())
-                }
-                var showDialog by remember {
-                    mutableStateOf(false)
-                }
-                var itemToDeleteIndex by remember {
-                    mutableStateOf(-1)
-                }
-
+                var text by remember { mutableStateOf("") }
+                var names by remember { mutableStateOf(listOf("Quang","Azura")) }
+                var selectedIndexes by remember { mutableStateOf(setOf<Int>()) }
+                var showDeleDialog by remember { mutableStateOf(false) }
+                var showEditDialog by remember { mutableStateOf(false) }
+                var itemToDeleteIndex by remember { mutableStateOf(-1) }
+                var itemToEditIndex by remember { mutableStateOf(-1) }
+                var editItemText by remember { mutableStateOf("") }
                 Column(
                    modifier = Modifier
                        .fillMaxSize()
@@ -105,26 +99,45 @@ class MainActivity : ComponentActivity() {
                                    }
                                )
                                Icon(
+                                   imageVector = Icons.Default.Edit,
+                                   contentDescription ="Edit",
+                                   modifier = Modifier
+                                       .padding(
+                                           top = 10.dp,
+                                           start = 8.dp,
+                                           end = 8.dp,
+                                       )
+                                       .size(24.dp)
+                                       .clickable {
+                                           showEditDialog = true
+                                           itemToEditIndex = index
+                                           editItemText = item
+                                       }
+                               )
+                               Icon(
                                    imageVector = Icons.Default.Delete,
                                    contentDescription ="Remove",
                                    modifier = Modifier
-                                       .padding(top = 10.dp)
+                                       .padding(
+                                           top = 10.dp,
+                                           start = 8.dp,
+                                           end = 8.dp,
+                                       )
                                        .size(24.dp)
                                        .clickable {
-                                       showDialog = true
-                                       itemToDeleteIndex = index
+                                           showDeleDialog = true
+                                           itemToDeleteIndex = index
                                    }
                                )
-
                            }
                            Divider()
                        }
                    }
-                    if(showDialog){
+                    if(showDeleDialog){
                         val context = LocalContext.current
                         AlertDialog(
                             onDismissRequest = {
-                                showDialog = false
+                                showDeleDialog = false
                                 itemToDeleteIndex = -1
                             },
                             title = {
@@ -138,7 +151,7 @@ class MainActivity : ComponentActivity() {
                                     names = names.toMutableList().apply {
                                         removeAt(itemToDeleteIndex)
                                     }
-                                    showDialog = false
+                                    showDeleDialog = false
                                     itemToDeleteIndex = -1
                                     Toast.makeText(context, "Item đã được xoá thành công", Toast.LENGTH_SHORT).show()
                                 }) {
@@ -147,7 +160,7 @@ class MainActivity : ComponentActivity() {
                             },
                             dismissButton = {
                                 Button(onClick = {
-                                    showDialog = false
+                                    showDeleDialog = false
                                     itemToDeleteIndex = -1
                                 }) {
                                     Text(text = "No")
@@ -155,8 +168,47 @@ class MainActivity : ComponentActivity() {
                             },
                         )
                     }
+                    if(showEditDialog){
+                        val context = LocalContext.current
+                        AlertDialog(
+                            onDismissRequest = {
+                                showEditDialog = false
+                                itemToEditIndex = -1
+                            },
+                            title = { Text(text= "Chỉnh sửa") },
+                            text = {
+                                Column {
+                                Text(text = "Chỉnh sửa item")
+                                OutlinedTextField(
+                                    value = editItemText,
+                                    onValueChange = { editItemText = it },
+                                )
+                            } },
+                            confirmButton = {
+                                Button(onClick = {
+                                    names = names.toMutableList().apply {
+                                        set(itemToEditIndex, editItemText)
+                                    }
+                                    showEditDialog = false
+                                    itemToEditIndex = -1
+                                    editItemText = ""
+                                    Toast.makeText(context, "Item đã chỉnh sửa thành công", Toast.LENGTH_SHORT).show()
+                                }) {
+                                    Text(text = "Confirm")
+                                }
+                            },
+                            dismissButton = {
+                                Button(onClick = {
+                                    showEditDialog = false
+                                    itemToEditIndex = -1
+                                    editItemText = ""
+                                }) {
+                                    Text(text = "Cancel")
+                                }
+                            },
+                        )
+                    }
                }
-                
             }
         }
     }
